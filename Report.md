@@ -4,6 +4,12 @@ The goal of this project was to design a Reinforcement Learning (RL) based agent
 # I. Agent Architecture
 The original (DQN) model was revolutionary because it was able to train and play Atari games with exceptional skill, as discussed in the paper [Playing Atari with Deep Reinforcement Learning](https://arxiv.org/pdf/1312.5602). 
 talk about DQN architecture, math equations, etc.
+The problem is to maximize the expected value function $`Q^*`$ for a state action pair, $(s, a)$ such that  
+$`$Q^*(s,a) = \mathbb{E}_{(s,a)} \left[r + \gamma \text{ max}_{a^{'}}\,Q^*(s^{'}, a^{'})\right]$`$   
+The network is designed to minimize the expected error between the true optimal action-value function $q`^*`$ and the estimated action-value function Q. The loss function $L_i(\theta_i)$ is given as:  
+$$L_i(\theta_i) = \mathbb{E}_{s, a} [(q^* - Q(s,a; \theta_i))^2]$$  
+where $`\theta_i`$ are the weights of the neural network used to parameterize Q for each layer i, and (s, a) are a sampled state-action pair. Take the gradient of $L$ with respect to the weights $\theta_i$ to obtain the network update function/objective function:  
+$`$\nabla L(\theta_i) = \mathbb{E}_{s,a,r,s^{'}} \left[(r + \gamma \text{max}_{a^{'}} Q(s^{'}, a^{'}; \theta_i) - Q(s, a; \theta_i)) \nabla_{\theta_i} Q(s, a; \theta_i)  )\right]$`$  
 then talk about what things I added to original DQN to make this one (replay buffer, fixed q-targets)
 
 The 
