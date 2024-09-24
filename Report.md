@@ -4,8 +4,13 @@ The goal of this project was to design a Reinforcement Learning (RL) based agent
 # I. Agent Architecture
 The original (DQN) model was revolutionary because it was able to train and play Atari games with exceptional skill, as discussed in the paper [Playing Atari with Deep Reinforcement Learning](https://arxiv.org/pdf/1312.5602). 
 talk about DQN architecture, math equations, etc.
-The problem is to find the optimal action-value function, from which one can define the policy that maximizes the return for each state. It is defined as $`q^*`$ for a state action pair, $(s, a)$ such that(pg 258 and pg 260)  
-$`$q^*(s,a) = \mathbb{E}_{(s,a)} \left[G_t | S_t = s, A_t = a\right] \forall s \epsilon S, \forall a \epsilon A(s)$`$  
+The problem is to find the optimal action-value function, from which one can define the policy that maximizes the return for each state. From [1], it is defined as $`q^*`$ for a state action pair $(s,a)$ provided by the optimal policy $\pi$ such that(pg 258 and pg 260):  
+$`$q^*(s,a) = \text{max}_{\pi} \mathbb{E}_{\pi} \left[G_t | S_t = s, A_t = a\right]\,\,  \forall s \in S, \forall a \in A(s)$`$  
+That is, the optimal policy will maximize the expected return $G_t$ of $`q^*`$ over the state space $S$ and action space $A$. We can estimate the optimal policy using nonlinear function approximation AKA a neural network.  
+
+Use the Q-Learning TD Target, which is an off-policy target that approximates a greedy policy because it always chooses the maximizing action. Note that the agent might not always choose the greedy action depending on the exploration/exploitation parameter $\epsilon$ discussed in Section II. From [1], the TD-Target is formulated as:  
+$`$y_i = R_{t+1} + \gamma \text{max}_{a} \left[Q(S_{t+1}, a; \theta_i)\right]$`$   
+First define $`q^*`$ as the Q-Learning target; the uknown function we are trying to estimate. 
 $`$q^*(s,a) = \mathbb{E}_{(s,a)} \left[r + \gamma \text{ max}_{a^{'}}\,Q^*(s^{'}, a^{'})\right]$`$  
 $`$q^*(s,a) = \text{max}_{\pi} \mathbb{E}_{\pi} \left[r + \gamma \text{ max}_{a^{'}}\,Q^*(s^{'}, a^{'})\right]$`$  
 The network is designed to minimize the expected error between the true optimal action-value function $`$q^*$`$ (known as the target) and the  neural network estimated action-value function Q. The loss function $L_i(\theta_i)$ is given as:  
