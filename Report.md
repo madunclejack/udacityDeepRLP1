@@ -66,6 +66,16 @@ $`$\nabla L(\theta_i) = \mathbb{E}_{s,a,r,s^{'}} \left[(r + \gamma Q(s^{'}, \tex
 
 Note that the TD target is now evaluated by finding the argument (AKA index) of the maximizing action given by online network. Then, that action is provided to the Target network to get an estimate of the value for the current state and the chosen action. This value is used to update the online network.
 ## Continuous Network Updates?
+def softUpdate(self, qNetLocal, qNetTarget):
+        """
+        Soft-update equation
+        θ_target = τ*θ_local + (1 - τ)*θ_target
+        Copies the parameters of the local network into the target network
+        """
+        for targetParams, localParams in zip(qNetTarget.parameters(), qNetLocal.parameters()):
+            targetParams.data.copy_(TAU*localParams.data + (1.0-TAU)*targetParams.data)
+
+
 Uses $\tau$. I think I implemented it?
 
 # III. Hyperparameters
