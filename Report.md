@@ -65,8 +65,30 @@ For DDQN, the Target network and the online network work well as separate networ
 $`$\nabla L(\theta_i) = \mathbb{E}_{s,a,r,s^{'}} \left[(r + \gamma Q(s^{'}, \text{argmax}_{a^{'}} Q(s^{'}, a^{'}; \theta_i); \theta^{-}) - Q(s, a; \theta_i)) \nabla_{\theta_i} Q(s, a; \theta_i)  )\right]$`$  
 
 Note that the TD target is now evaluated by finding the argument (AKA index) of the maximizing action given by online network. Then, that action is provided to the Target network to get an estimate of the value for the current state and the chosen action. This value is used to update the online network.
-  
+## Continuous Network Updates?
+Uses $\tau$. I think I implemented it?
+
 # III. Hyperparameters
+
+# Global Parameters
+""" Alpha, or Learning Rate """
+LEARN_RATE = 5e-4
+""" Discount factor for rewards """
+GAMMA = 0.99
+""" Size of Replay Buffer """
+BUFFER_SIZE = int(1e5)
+""" Size of the batchs to fetch from the Replay Buffer """
+BATCH_SIZE = 32
+""" Parameter to control how many steps between updating the Neural Net """
+LEARN_EVERY = 5
+""" Parameter to control how much to update the target network with the local network"""
+""" Bigger means it updates the target network with more of the local network """
+TAU = 0.25
 
 # IV. Training Results
 # V. Conclusion and Future Work
+Dueling DQN
+Prioritized Replay
+Other exploration strategies (greedy epsilon decay, exponential epsilon decay, softmax)  
+
+
