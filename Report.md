@@ -52,7 +52,6 @@ where we now take the maximizing action from the Target network, indicated by $\
 The weights are updated using the Adam function, which uses and Adaptive Momentum update rule. It is adaptive because it changes the size of the update step based on the size of the gradient. It uses momentum to help get the gradient out of local minima and hopefully encourage the network to converge to the global mininum. Adam also uses a hyperparmeter $\alpha$ which controls how quickly the updated weights are applied to the network. It helps ensure the network eventually converges to the optimal solution as the number of samples goes to infinity. The learning rate must decay with time 
 
 # II. Improvements to  DQN  
-then talk about what things I added to original DQN to make this one (replay buffer, fixed q-targets)
 The basic DQN is a good place to start, but it did not converge to a solution for this project. To improve it, I added an Experience Replay Buffer (or Replay Buffer) and changed the algorithm to Double DQN. The Replay Buffer stores a number of previous experiences for the agent to resample so it can learn from them again. Double DQN helps prevent maximization bias. Both concepts are discussed further below.
 ## Experience Replay Buffer
 A replay buffer is a memory bank of previous experiences, stored so the network can resample the experiences for an update. The buffer provides a larger sample of experiences to chose from each update step, rather than the select few the agent has encountered at the end of an episode. It is beneficial for agent to revisit past experiences because it can often learn more from the same experience. Additionally, the experiences are taken from diverse parts of the state space, so they are more indepenently sampled and less correlated. Finally, the replay buffer helps ensure the Q-Target is slowly moving so the agent can update better with less risk of diverging. The size of the replay buffer is controlled by a hyperparameter.
@@ -65,35 +64,28 @@ For DDQN, the Target network and the online network work well as separate networ
 $`$\nabla L(\theta_i) = \mathbb{E}_{s,a,r,s^{'}} \left[(r + \gamma Q(s^{'}, \text{argmax}_{a^{'}} Q(s^{'}, a^{'}; \theta_i); \theta^{-}) - Q(s, a; \theta_i)) \nabla_{\theta_i} Q(s, a; \theta_i)  )\right]$`$  
 
 Note that the TD target is now evaluated by finding the argument (AKA index) of the maximizing action given by online network. Then, that action is provided to the Target network to get an estimate of the value for the current state and the chosen action. This value is used to update the online network.
-## Continuous Network Updates?
-def softUpdate(self, qNetLocal, qNetTarget):
-        """
-        Soft-update equation
-        θ_target = τ*θ_local + (1 - τ)*θ_target
-        Copies the parameters of the local network into the target network
-        """
-        for targetParams, localParams in zip(qNetTarget.parameters(), qNetLocal.parameters()):
-            targetParams.data.copy_(TAU*localParams.data + (1.0-TAU)*targetParams.data)
+## Continuous Network Updates
+The target network was designed to be stationary so the network weights could converge to something stable before the weights were updated with new information. However, the target network goes stale as new information is discovered and the local network is updated. Additionally, making large changes to the target weights could disrupt the learning process and make it more difficultto converge. One solution is to use Polyak Averaging to continuously but gradually update the target network with weights from the local network. This concept is expressed in the equation:  
 
+$\theta_{target} = \tau * \theta_{local} + (1 - \tau) * \theta_{target}$  
 
-Uses $\tau$. I think I implemented it?
+The hyperparameter $\tau$ controls the target network update rate. It allows the target network to lag behind the local network, but still incorporate new information.
 
 # III. Hyperparameters
-
-# Global Parameters
-""" Alpha, or Learning Rate """
-LEARN_RATE = 5e-4
-""" Discount factor for rewards """
-GAMMA = 0.99
-""" Size of Replay Buffer """
-BUFFER_SIZE = int(1e5)
-""" Size of the batchs to fetch from the Replay Buffer """
-BATCH_SIZE = 32
-""" Parameter to control how many steps between updating the Neural Net """
-LEARN_EVERY = 5
-""" Parameter to control how much to update the target network with the local network"""
-""" Bigger means it updates the target network with more of the local network """
-TAU = 0.25
+Below is a list of hyperparameters and a description of their purpose.  
+  
+$\alpha$: Learning Rate for the Adam optimizer. It controls how much of the reward update comes from the TD error, and how much comes from the received reward.  
+**LEARN_RATE = 5e-4**  
+$\gamma$: Discount factor for future rewards. Future rewards aren't know with high certainty, and they are less useful at the current state.  
+**GAMMA = 0.99**  
+Size of Replay Buffer: Controls how many samples are available for sampling to update the network.  
+**BUFFER_SIZE = int(1e5)**  
+Size of the batchs to fetch from the Replay Buffer: the number of samples in the mini-batch to update the network:  
+**BATCH_SIZE = 32**  
+After this many steps, update the target network:  
+**LEARN_EVERY = 5**  
+$\tau$: Parameter to control how much to update the target network with the local network. Bigger means it updates the target network with more of the local network  
+**TAU = 0.25**
 
 # IV. Training Results
 # V. Conclusion and Future Work
