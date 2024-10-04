@@ -41,7 +41,7 @@ and take the gradient of $L$ with respect to the weights $\theta_i$ to obtain th
   
 $`$\nabla L(\theta_i) = \mathbb{E}_{s,a,r,s^{'}} \left[(r + \gamma \text{max}_{a^{'}} Q(s^{'}, a^{'}; \theta_i) - Q(s, a; \theta_i)) \nabla_{\theta_i} Q(s, a; \theta_i)  )\right]$`$  
   
-The DQN algorithm uses a copy of the network that is updated less frequently as a represenentatio of the Target (the offline network), and a copy that is updated every step the agent takes which represents the current estimate of the action-value function (the online network).
+The DQN algorithm uses a copy of the network that is updated less frequently as a represenentation of the Target (the offline network), and a copy that is updated every step the agent takes which represents the current estimate of the action-value function (the online network).
 To update the offline network, the agent takes several steps to create a mini-batch of samples. The size of the mini-batch is a hyperparameter discussed in Section III. After a set number of steps, the algorithm computes the error between the offline TD Target network and the online network and updates the offline network weights to minimize the error. Mini-batches are important because updating after every step would have high varaince, and make it difficult for the network to converge on a solution as the target would always move. The steps are also assumed to be from a stationary,  Independent Identically Distributed (IID)  distribution. The samples cannot be taken from a distribution that is changing, and the samples are assumed to be independent from each other yet taken from an identical distribution. A mini-batch approach helps to re-create that assumption since there are multiple steps taken before the offline network gets updated and changes the sampled distribution.  
 The update function is updated to reflect the delay in the Target network:  
 
@@ -49,7 +49,10 @@ $`$\nabla L(\theta_i) = \mathbb{E}_{s,a,r,s^{'}} \left[(r + \gamma \text{max}_{a
 
 where we now take the maximizing action from the Target network, indicated by $\theta^{-}$.  
   
-The weights are updated using the Adam function, which uses and Adaptive Momentum update rule. It is adaptive because it changes the size of the update step based on the size of the gradient. It uses momentum to help get the gradient out of local minima and hopefully encourage the network to converge to the global mininum. Adam also uses a hyperparmeter $\alpha$ which controls how quickly the updated weights are applied to the network. It helps ensure the network eventually converges to the optimal solution as the number of samples goes to infinity. The learning rate must decay with time 
+The weights are updated using the Adam function, which uses and Adaptive Momentum update rule. It is adaptive because it changes the size of the update step based on the size of the gradient. It uses momentum to help get the gradient out of local minima and hopefully encourage the network to converge to the global mininum. Adam also uses a hyperparmeter $\alpha$ which controls how quickly the updated weights are applied to the network. It helps ensure the network eventually converges to the optimal solution as the number of samples goes to infinity. The learning rate must decay with time.
+
+## Neural Network Design
+The neural network models Q-Function, which maps states and actions to an expected reward value. Rather than provide the action with the state, the network gives a value to each action and the agent can choose between them. The network has an input plane of 37 nodes representing the 37 input states, and an ouput plane of 4 nodes which provides an action value for each possible action (up, down, right, left). I decided to use 2 fully connected hidden layers with 64 nodes each. That seemed like a reasonable trade-off between network flexibility and size in memory.
 
 # II. Improvements to  DQN  
 The basic DQN is a good place to start, but it did not converge to a solution for this project. To improve it, I added an Experience Replay Buffer (or Replay Buffer) and changed the algorithm to Double DQN. The Replay Buffer stores a number of previous experiences for the agent to resample so it can learn from them again. Double DQN helps prevent maximization bias. Both concepts are discussed further below.
@@ -74,6 +77,8 @@ The hyperparameter $\tau$ controls the target network update rate. It allows the
 # III. Hyperparameters
 Below is a list of hyperparameters and a description of their purpose.  
   
+Max Steps: the number of steps per episode before the agent is forced to stop if it doesn't reach the goal. If it is too small, the agent won't make progress learning. If it is too large, the agent might over fit the data because it's received examples that are less independent.  
+**MAX STEPS = 500**
 $\alpha$: Learning Rate for the Adam optimizer. It controls how much of the reward update comes from the TD error, and how much comes from the received reward.  
 **LEARN_RATE = 5e-4**  
 $\gamma$: Discount factor for future rewards. Future rewards aren't know with high certainty, and they are less useful at the current state.  
@@ -82,22 +87,44 @@ Size of Replay Buffer: Controls how many samples are available for sampling to u
 **BUFFER_SIZE = int(1e5)**  
 Size of the batchs to fetch from the Replay Buffer: the number of samples in the mini-batch to update the network:  
 **BATCH_SIZE = 32**  
-After this many steps, update the target network:  
+After this many steps, update the target network  
 **LEARN_EVERY = 5**  
-$\tau$: Parameter to control how much to update the target network with the local network. Bigger means it updates the target network with more of the local network  
-**TAU = 0.25**
+$\tau$ : Parameter to control how much to update the target network with the local network. Bigger means it updates the target network with more of the local network. The value I chose is large (typically around 0.1) but it seems to learn relatively quickly and effectively.  
+**TAU = 0.25**  
+$\epsilon$ : exploration/exploitation parameter, larger values makes the network choose random actions more and explore the state space. Over time, $\epsilon$ decays to 0.01 which makes the network choose the action with the highest reward.  
+**EPSILON = 0.999, decays to 0.01**
 
 # IV. Training Results
 Training Results from DQN  
 ![DQN](media/TrainingScores_DQN_Avg_white.png)  
-The DQN model successfully trained.
+The DQN model successfully trained the agent in 2847 episodes. The final score after 2947 episodes was 14.06.
   
 Results from Double DQN  
 ![DoubleDQN](media/TrainingScores_DDQN_Avg_white.png)  
-  
+The DDQN was more efficient, and was able to train the agent in 1933 episodes. The final score after 2033 episodes was 14.02.  
+
+The DDQN agent was able to train the network in almost 1000 fewer episodes, which is a significant time savings!
+
 # V. Conclusion and Future Work
-Dueling DQN
+There are further improvements on Double DQN that help the agent learn more efficiently from samples, which ultimately decreases the learning time. These improvements would be beneficial to incorporate in future projects.  
+
+### Huber Loss ###  
+In [1], Morales suggests an alternative loss function called the Huber Loss, which is a combination of Mean Squared Error (MSE) loss and Mean Abosolute Error (MAE) loss. Mean Squared Error Loss gives more weight to larger errors than small errors between the Target and the action value function. In supervised learning this philosophy holds because the true values are known from labeled data. For reinforcement learning, the agent is constantly adjusting the "truth" so it makes less sense to heavily penalize error since the truth we compare to is getting updated as well.
+
+Mean Absolute Error, which takes the absolute value of the error between the TD Target and the action-value function. It is more resislient to outliers because it gives similar weighting to large and small errors, it is just a linear scale. This makes sense because the agent will be very wrong in the beginning as the agent starts to explore. However, MSE is advantageous over MAE in that the MSE gradients go to 0 as the loss goes to 0, which encourages the network to update less as the loss diminishes. Thereby the network should be more likely to stay in a minima and not overshoot.  
+
+Huber loss is a combination of MSE and MAE; Near 0 it behaves like MSE and has a gentle gradient. Past a certain point, it turns linear like MAE so larger errors are not disproportionately penalized. It uses a hyperparameter, $\delta$, to control when the loss function becomes linear. $\delta = 0$ presents MAE, and $\delta = \inf$ presents MSE. A common choice is $\delta = 1$, but it requires tuning of several hyperparameters to find a value that works.
+
+### Dueling DQN ###
+Dueling DQN, another improvement, is presented in this paper: [Dueling Network Architectures for Deep Reinforcement Learning](https://arxiv.org/abs/1511.06581). which improves the agent's learning efficiency. The difference is the network will compute $q(s,a)$ by computing the value function $v(s)$ and the advantage function $a(s) = q(s,a) - v(s)$. The advantage function provides the extra value of chosing action $a$ over the default policy chosen for $v(s)$. Each state has some shared information about its value, characterized by $V(s)$. By computing $A(s)$ instead of $Q(s,a)$, we can extract more information from each sample because each sample will update the calculation for $V(s)$, which is common to all actions, and the specific *advantage* of choosing one action over the others. One way to implement it is to change the output of the neural network from 1 node per action to 1 node estimating $v(s)$, and 1 node per action representing $a(s,a)$. Then compute $q(s,a)$ as:  
+  
+$Q(s,a) = V(s) + A(s, a)$  
+  
+$`Q(s,a;\theta,\alpha,\beta) = V(s; \theta, \beta) + \left(A(s,a; \theta, \alpha) - \frac{1}{|A|} \sum_{a^{'}}\,\, A(s,a^{'}; \theta, \alpha)\right)$`$  
+  
+where $\theta$ is the network weights shared by $Q$, $V$, and $A$, $\beta$ are the network weights specific to $V$, and $\alpha$ are the weights specific to $A$. It is recommended to subtract the average advantage values from $A$ because the network really computes $Q$, the state-action value for each action. To transform the network outputs to $A$, the advantage function, subtract the mean of the advantages by a constant value each time the network runs. This should stabilize the optimization process.
 Prioritized Replay
-Other exploration strategies (greedy epsilon decay, exponential epsilon decay, softmax)  
+Other exploration strategies (greedy epsilon decay, exponential epsilon decay, softmax)
+
 
 
