@@ -6,7 +6,7 @@
 
 ### Introduction
 
-For this project, you will train an agent to navigate (and collect bananas!) in a large, square world.  
+For this project, you will train an agent to navigate (and collect bananas!) in a large, square world.  The agent is derived from [Unity ML-Agents Github](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#banana-collector) 
 
 ![Trained Agent][image1]
 
