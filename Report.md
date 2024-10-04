@@ -49,7 +49,7 @@ $`$\nabla L(\theta_i) = \mathbb{E}_{s,a,r,s^{'}} \left[(r + \gamma \text{max}_{a
 
 where we now take the maximizing action from the Target network, indicated by $\theta^{-}$.  
   
-The weights are updated using the Adam function, which uses and Adaptive Momentum update rule. It is adaptive because it changes the size of the update step based on the size of the gradient. It uses momentum to help get the gradient out of local minima and hopefully encourage the network to converge to the global mininum. Adam also uses a hyperparmeter $\alpha$ which controls how quickly the updated weights are applied to the network. It helps ensure the network eventually converges to the optimal solution as the number of samples goes to infinity. The learning rate must decay with time.
+The weights are updated using the Adam function, which uses and Adaptive Momentum update rule. It is adaptive because it changes the size of the update step based on the size of the gradient. It uses momentum to help get the gradient out of local minima and hopefully encourages the network to converge to the global mininum. Adam also uses a hyperparmeter $\alpha$ which controls how quickly the updated weights are applied to the network. It helps ensure the network eventually converges to the optimal solution as the number of samples goes to infinity. The learning rate must decay with time.
 
 ## Neural Network Design
 The neural network models the Q-Function, which maps states and actions to an expected reward value. Rather than provide the action with the state, the network gives a value to each action and the agent can choose between them. The network has an input plane of 37 nodes representing the 37 input states, and an ouput plane of 4 nodes which provides an action value for each possible action (up, down, right, left). I decided to use 2 fully connected hidden layers with 64 nodes each. That seemed like a reasonable trade-off between network flexibility and size in memory.
@@ -59,7 +59,7 @@ The basic DQN is a good place to start, but it did not converge to a solution qu
 ## Experience Replay Buffer
 A replay buffer is a memory bank of previous experiences, stored so the network can resample the experiences for an update. The buffer provides a larger sample of experiences to chose from each update step, rather than the select few the agent has encountered at the end of an episode. It is beneficial for agent to revisit past experiences because it can often learn more from the same experience. Additionally, the experiences are taken from diverse parts of the state space, so they are more indepenently sampled and less correlated. Finally, the replay buffer helps ensure the Q-Target is slowly moving so the agent can update better with less risk of diverging. The size of the replay buffer is controlled by a hyperparameter.
 ## Double Deep Q-Network
-The basic Q-Learning approach has a tendency to bias towards positive rewards, which isn't always the correct value for a given state. This occurs because the agent choose the maximum estimated reward even if the true reward value should be near 0 or negative.
+The basic Q-Learning approach has a tendency to bias towards positive rewards, which isn't always the correct value for a given state. This occurs because the agent chooses the maximum estimated reward even if the true reward value should be near 0 or negative.
 Double Q-Learning solves this problem by having two Q-tables, $Q_a$ and $Q_b$. The algorithm makes a random choice between $Q_a$ and $Q_b$ to find the maximum action value for the given state. But the value assigned to that action comes from the other Q-table! In this way, both tables prevent each other from giving a biased estimate.  
 
 For DDQN, the Target network and the online network work well as separate networks to use for Double Q-Learning. In practice, the online network is used to find the index of the best action. Then the Target network is used to evaluate the value for that action. The Target network is updated less frequently, so it gives more stable value estimates. The update rule changes as thus:   
@@ -78,7 +78,7 @@ The hyperparameter $\tau$ controls the target network update rate. It allows the
 Below is a list of hyperparameters and a description of their purpose.  
   
 Max Steps: the number of steps per episode before the agent is forced to stop if it doesn't reach the goal. If it is too small, the agent won't make progress learning. If it is too large, the agent might over fit the data because it's received examples that are less independent.  
-**MAX STEPS = 500**
+**MAX STEPS = 500**  
 $\alpha$: Learning Rate for the Adam optimizer. It controls how much of the reward update comes from the TD error, and how much comes from the received reward.  
 **LEARN_RATE = 5e-4**  
 $\gamma$: Discount factor for future rewards. Future rewards aren't know with high certainty, and they are less useful at the current state.  
