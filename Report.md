@@ -88,11 +88,12 @@ $\tau$: Parameter to control how much to update the target network with the loca
 **TAU = 0.25**
 
 # IV. Training Results
-Results from DQN  
-![DQN](media/TrainingScores_DQN_Avg.png)  
+Training Results from DQN  
+![DQN](media/TrainingScores_DQN_Avg_white.png)  
+The DQN model successfully trained.
   
 Results from Double DQN  
-![DoubleDQN](media/TrainingScores_DDQN_Avg.png)  
+![DoubleDQN](media/TrainingScores_DDQN_Avg_white.png)  
   
 # V. Conclusion and Future Work
 Dueling DQN
