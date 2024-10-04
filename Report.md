@@ -88,8 +88,12 @@ $\tau$: Parameter to control how much to update the target network with the loca
 **TAU = 0.25**
 
 # IV. Training Results
-[DQN]('media/Training Scores_DQN.png')  
-[DQN]("media/Training Scores_DoubleDQN.png")
+Results from DQN  
+![DQN](media/TrainingScores_DQN_Avg.png)  
+  
+Results from Double DQN  
+![DoubleDQN](media/TrainingScores_DDQN_Avg.png)  
+  
 # V. Conclusion and Future Work
 Dueling DQN
 Prioritized Replay
