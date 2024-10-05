@@ -109,11 +109,12 @@ There are further improvements on Double DQN that help the agent learn more effi
 
 ### Huber Loss ###  
 In [1], Morales suggests an alternative loss function called the Huber Loss, which is a combination of Mean Squared Error (MSE) loss and Mean Abosolute Error (MAE) loss. Mean Squared Error Loss gives more weight to larger errors than small errors between the Target and the action value function. In supervised learning this philosophy holds because the true values are known from labeled data. For reinforcement learning, the agent is constantly adjusting the "truth" so it makes less sense to heavily penalize error since the truth we compare to is getting updated as well.
-![Huber]('media/ComparisonOfLoss.png')
 
 Mean Absolute Error, which takes the absolute value of the error between the TD Target and the action-value function. It is more resislient to outliers because it gives similar weighting to large and small errors, it is just a linear scale. This makes sense because the agent will be very wrong in the beginning as the agent starts to explore. However, MSE is advantageous over MAE in that the MSE gradients go to 0 as the loss goes to 0, which encourages the network to update less as the loss diminishes. Thereby the network should be more likely to stay in a minima and not overshoot.  
 
 Huber loss is a combination of MSE and MAE; Near 0 it behaves like MSE and has a gentle gradient. Past a certain point, it turns linear like MAE so larger errors are not disproportionately penalized. It uses a hyperparameter, $\delta$, to control when the loss function becomes linear. $\delta = 0$ presents MAE, and $\delta = \inf$ presents MSE. A common choice is $\delta = 1$, but it requires tuning of several hyperparameters to find a value that works.
+
+![Huber]('media/ComparisonOfLoss.png')
 
 ### Dueling DQN ###
 Dueling DQN, another improvement, is presented in this paper: [Dueling Network Architectures for Deep Reinforcement Learning](https://arxiv.org/abs/1511.06581). which improves the agent's learning efficiency. The difference is the network will compute $q(s,a)$ by computing the value function $v(s)$ and the advantage function $a(s) = q(s,a) - v(s)$. The advantage function provides the extra value of chosing action $a$ over the default policy chosen for $v(s)$. Each state has some shared information about its value, characterized by $V(s)$. By computing $A(s)$ instead of $Q(s,a)$, we can extract more information from each sample because each sample will update the calculation for $V(s)$, which is common to all actions, and the specific *advantage* of choosing one action over the others. One way to implement it is to change the output of the neural network from 1 node per action to 1 node estimating $v(s)$, and 1 node per action representing $a(s,a)$. Then compute $q(s,a)$ as:  
@@ -123,7 +124,8 @@ $Q(s,a) = V(s) + A(s, a)$
 $`Q(s,a;\theta,\alpha,\beta) = V(s; \theta, \beta) + \left(A(s,a; \theta, \alpha) - \frac{1}{|A|} \sum_{a^{'}}\,\, A(s,a^{'}; \theta, \alpha)\right)$`$  
   
 where $\theta$ is the network weights shared by $Q$, $V$, and $A$, $\beta$ are the network weights specific to $V$, and $\alpha$ are the weights specific to $A$. It is recommended to subtract the average advantage values from $A$ because the network really computes $Q$, the state-action value for each action. To transform the network outputs to $A$, the advantage function, subtract the mean of the advantages by a constant value each time the network runs. This should stabilize the optimization process.
-Prioritized Replay
+### Prioritized Replay ###
+
 Other exploration strategies (greedy epsilon decay, exponential epsilon decay, softmax)
 
 
