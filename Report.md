@@ -107,6 +107,12 @@ The DDQN agent was able to train the network in almost 1000 fewer episodes, whic
 # V. Conclusion and Future Work
 There are further improvements on Double DQN that help the agent learn more efficiently from samples, which ultimately decreases the learning time. These improvements would be beneficial to incorporate in future projects.  
 
+Below are some changes I can make to improve the sample efficiency and decrease the learing time.  
+### Alternative Epsilon Decay Strategies ###
+This project used the common Exponential Epsilon Decay strategy, which worked well for this example. However, other Decay Strategies may yield better results. (greedy epsilon decay, exponential epsilon decay, softmax)
+- Linearly Decaying Epsilon: an alternative decay strategy that could change the learning rate
+- Softmax: apply a probability to choosing the highest estimated values vs the lowest, with higher estimates being more probable. There is a hyperparameter to control if the probability distribution is closer to uniform, or more weighted on the highest values. This hyperparameter can decay with time so that all actions are equally probable (uniform distribution) but by the end, the distribution favors the highest estimated value.
+
 ### Huber Loss ###  
 In [1], Morales suggests an alternative loss function called the Huber Loss, which is a combination of Mean Squared Error (MSE) loss and Mean Abosolute Error (MAE) loss. Mean Squared Error Loss gives more weight to larger errors than small errors between the Target and the action value function. In supervised learning this philosophy holds because the true values are known from labeled data. For reinforcement learning, the agent is constantly adjusting the "truth" so it makes less sense to heavily penalize error since the truth we compare to is getting updated as well.
 
@@ -114,19 +120,19 @@ Mean Absolute Error, which takes the absolute value of the error between the TD 
 
 Huber loss is a combination of MSE and MAE; Near 0 it behaves like MSE and has a gentle gradient. Past a certain point, it turns linear like MAE so larger errors are not disproportionately penalized. It uses a hyperparameter, $\delta$, to control when the loss function becomes linear. $\delta = 0$ presents MAE, and $\delta = \inf$ presents MSE. A common choice is $\delta = 1$, but it requires tuning of several hyperparameters to find a value that works.
 
-![Huber]('media/ComparisonOfLoss.png')
+![Huber](media/ComparisonOfLoss.png)
 
 ### Dueling DQN ###
-Dueling DQN, another improvement, is presented in this paper: [Dueling Network Architectures for Deep Reinforcement Learning](https://arxiv.org/abs/1511.06581). which improves the agent's learning efficiency. The difference is the network will compute $q(s,a)$ by computing the value function $v(s)$ and the advantage function $a(s) = q(s,a) - v(s)$. The advantage function provides the extra value of chosing action $a$ over the default policy chosen for $v(s)$. Each state has some shared information about its value, characterized by $V(s)$. By computing $A(s)$ instead of $Q(s,a)$, we can extract more information from each sample because each sample will update the calculation for $V(s)$, which is common to all actions, and the specific *advantage* of choosing one action over the others. One way to implement it is to change the output of the neural network from 1 node per action to 1 node estimating $v(s)$, and 1 node per action representing $a(s,a)$. Then compute $q(s,a)$ as:  
+Dueling DQN, another improvement, is presented in this paper: [Dueling Network Architectures for Deep Reinforcement Learning](https://arxiv.org/abs/1511.06581). which improves the agent's learning efficiency. The difference is the network will compute $Q(s,a)$ by computing the value function $V(s)$ and the advantage function $A(s) = Q(s,a) - V(s)$. The advantage function provides the extra value of chosing action $a$ over the default policy chosen for $V(s)$. Each state has some shared information about its value, characterized by $V(s)$. By computing $A(s)$ instead of $Q(s,a)$, we can extract more information from each sample because each sample will update the calculation for $V(s)$, which is common to all actions, and the specific *advantage* of choosing one action over the others. One way to implement it is to change the output of the neural network from 1 node per action to 1 node estimating $V(s)$, and 1 node per action representing $A(s,a)$. Then compute $Q(s,a)$ as:  
   
 $Q(s,a) = V(s) + A(s, a)$  
   
 $`Q(s,a;\theta,\alpha,\beta) = V(s; \theta, \beta) + \left(A(s,a; \theta, \alpha) - \frac{1}{|A|} \sum_{a^{'}}\,\, A(s,a^{'}; \theta, \alpha)\right)$`$  
   
-where $\theta$ is the network weights shared by $Q$, $V$, and $A$, $\beta$ are the network weights specific to $V$, and $\alpha$ are the weights specific to $A$. It is recommended to subtract the average advantage values from $A$ because the network really computes $Q$, the state-action value for each action. To transform the network outputs to $A$, the advantage function, subtract the mean of the advantages by a constant value each time the network runs. This should stabilize the optimization process.
+where $\theta$ is the network weights shared by $Q$, $V$, and $A$, $\beta$ are the network weights specific to $V$, and $\alpha$ are the weights specific to $A$. It is recommended to subtract the average advantage values from $A$ because the network really computes $Q$, the state-action value for each action. To transform the network outputs to $A$, the advantage function, subtract a constant value each time the network runs. This should stabilize the optimization process.
 ### Prioritized Replay ###
+The philosophy of Prioritized Experience Replay (PER) is to have the agent revist samples that were "surprising"; that is, examples where the TD error was large. These samples have a large absolute difference between the expected reward and the actual reward received. They show the greatest opportunity for the agent to learn. The samples need to be scaled by a prioritzation factor based on their TD-error. Once re-sampled, their TD error is updated again to ensure they accurately track how useful the sample is. There are several prioritzation methods including Proportional Prioritization and Rank based Prioritzation. Ultimately PER improves sample efficiency and helps the agent learn faster.
 
-Other exploration strategies (greedy epsilon decay, exponential epsilon decay, softmax)
-
-
+## Bibliography ##  
+[1] grokking Deep Reinforcement Learning Miguel Morales 2020 Manning Publications
 
