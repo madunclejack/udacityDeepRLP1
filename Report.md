@@ -109,6 +109,7 @@ There are further improvements on Double DQN that help the agent learn more effi
 
 ### Huber Loss ###  
 In [1], Morales suggests an alternative loss function called the Huber Loss, which is a combination of Mean Squared Error (MSE) loss and Mean Abosolute Error (MAE) loss. Mean Squared Error Loss gives more weight to larger errors than small errors between the Target and the action value function. In supervised learning this philosophy holds because the true values are known from labeled data. For reinforcement learning, the agent is constantly adjusting the "truth" so it makes less sense to heavily penalize error since the truth we compare to is getting updated as well.
+![Huber]('media/ComparisonOfLoss.png')
 
 Mean Absolute Error, which takes the absolute value of the error between the TD Target and the action-value function. It is more resislient to outliers because it gives similar weighting to large and small errors, it is just a linear scale. This makes sense because the agent will be very wrong in the beginning as the agent starts to explore. However, MSE is advantageous over MAE in that the MSE gradients go to 0 as the loss goes to 0, which encourages the network to update less as the loss diminishes. Thereby the network should be more likely to stay in a minima and not overshoot.  
 
